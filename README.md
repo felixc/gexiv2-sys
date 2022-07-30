@@ -1,13 +1,13 @@
 gexiv2-sys
 ==========
 
-[![build-badge][]][build] &nbsp;
-[![downloads-badge][]][crates-io] &nbsp;
-[![version-badge][]][crates-io] &nbsp;
-[![license-badge][]][license] &nbsp;
+[![build-badge][]][build]&nbsp;
+[![downloads-badge][]][crates-io]&nbsp;
+[![version-badge][]][crates-io]&nbsp;
+[![license-badge][]][license]&nbsp;
 
-[build]: https://travis-ci.org/felixc/gexiv2-sys
-[build-badge]: https://img.shields.io/travis/felixc/gexiv2-sys.svg
+[build]: https://github.com/felixc/gexiv2-sys/actions/workflows/ci.yml
+[build-badge]: https://github.com/felixc/gexiv2-sys/actions/workflows/ci.yml/badge.svg
 [crates-io]: https://crates.io/crates/gexiv2-sys
 [downloads-badge]: https://img.shields.io/crates/d/gexiv2-sys.svg
 [version-badge]: https://img.shields.io/crates/v/gexiv2-sys.svg
