@@ -49,17 +49,11 @@ pub enum GExiv2PreviewProperties {}
 /// Be sure to free it with [`gexiv2_preview_image_free()`](fn.gexiv2_preview_image_free.html).
 pub enum GExiv2PreviewImage {}
 
+extern crate glib_sys as glib;
+
 /// Container for information about recoverable runtime errors.
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct GError {
-    /// Part of the program from which the error originated.
-    pub domain: u32,
-    /// Identifier for the error that occurred.
-    pub code: c_int,
-    /// Human-readable description of the problem.
-    pub message: *const c_char,
-}
+pub type GError = glib::GError;
+pub use glib::g_error_free;
 
 /// All the possible orientations for an image.
 #[repr(C)]
@@ -212,9 +206,6 @@ extern {
     pub fn gexiv2_log_use_glib_logging();
 }
 
-
-#[cfg(feature = "raw-tag-access")]
-extern crate glib_sys as glib;
 
 #[cfg(feature = "raw-tag-access")]
 extern {
