@@ -33,9 +33,9 @@ include = [
 ]
 
 [dependencies]
+glib-sys = "0.16"
 libc = "0.2"
 bitflags = { version = "1.3", optional = true}
-glib-sys = { version = "0.16", optional = true }
 
 [build-dependencies]
 pkg-config = "0.3"
@@ -44,5 +44,5 @@ pkg-config = "0.3"
 tempfile = "3.3"
 
 [features]
-raw-tag-access = ["glib-sys"]
+raw-tag-access = []
 xmp-packet-access = ["bitflags"]
