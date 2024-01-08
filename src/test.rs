@@ -19,10 +19,12 @@ extern crate libc;
 extern crate tempfile;
 
 use std::ffi;
+use std::ffi::c_void;
 use std::fs;
-use std::io::Write;
+use std::io::{Cursor, Write};
 use std::ptr;
 use std::slice;
+use libc::c_longlong;
 
 use super::*;
 
@@ -269,5 +271,68 @@ fn log_get_and_set_level() {
         assert_eq!(gexiv2_log_get_level(), GExiv2LogLevel::WARN);
         gexiv2_log_set_level(GExiv2LogLevel::INFO);
         assert_eq!(gexiv2_log_get_level(), GExiv2LogLevel::INFO);
+    }
+}
+
+#[test]
+fn test_metadata_save_to_stream() {
+    unsafe {
+
+        let meta: *mut GExiv2Metadata = make_new_metadata();
+
+        let output_data: Vec<u8> = Vec::from(MINI_JPEG);
+        let mut cursor = Cursor::new(output_data.clone());
+
+        let mut callbacks = ManagedStreamCallbacks::new(&mut cursor as *mut Cursor<Vec<u8>> as *mut c_void);
+
+        let mut err: *mut GError = ptr::null_mut();
+
+        let result = gexiv2_metadata_save_stream(meta, &mut callbacks as *mut ManagedStreamCallbacks, &mut err);
+
+        if !err.is_null() {
+            let error_msg = ffi::CStr::from_ptr((*err).message).to_str().unwrap();
+            println!("Error: {}", error_msg);
+        }
+
+        assert_eq!(result, 1, "Failed to save metadata to stream.");
+
+        // verify the streamed data
+        let stream_length = stream_length(callbacks.handle);
+        assert_eq!(stream_length, MINI_JPEG.len() as c_longlong, "Stream length does not match original data length");
+
+        // Clean up
+        gexiv2_metadata_free(meta);
+    }
+}
+
+#[test]
+fn test_metadata_open_and_save_to_stream() {
+    unsafe {
+        let meta: *mut GExiv2Metadata = gexiv2_metadata_new();
+
+        let output_data: Vec<u8> = Vec::from(MINI_JPEG);
+        let mut cursor = Cursor::new(output_data.clone());
+        let mut callbacks = ManagedStreamCallbacks::new(&mut cursor as *mut Cursor<Vec<u8>> as *mut c_void);
+        let mut err: *mut GError = ptr::null_mut();
+        let _ = gexiv2_metadata_open_stream(meta, &mut callbacks as *mut ManagedStreamCallbacks, &mut err);
+        if !err.is_null() {
+            let error_msg = ffi::CStr::from_ptr((*err).message).to_str().unwrap();
+            println!("Error: {}", error_msg);
+        }
+        let mut err: *mut GError = ptr::null_mut();
+        let result = gexiv2_metadata_save_stream(meta, &mut callbacks as *mut ManagedStreamCallbacks, &mut err);
+        if !err.is_null() {
+            let error_msg = ffi::CStr::from_ptr((*err).message).to_str().unwrap();
+            println!("Error: {}", error_msg);
+        }
+
+        assert_eq!(result, 1, "Failed to save metadata to stream.");
+
+        // verify the streamed data
+        let stream_length = stream_length(callbacks.handle);
+        assert_eq!(stream_length, MINI_JPEG.len() as c_longlong, "Stream length does not match original data length");
+
+        // Clean up
+        gexiv2_metadata_free(meta);
     }
 }
