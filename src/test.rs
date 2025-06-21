@@ -201,6 +201,8 @@ fn metadata_get_tag_type() {
 
 // Exif thumbnail getter/setters.
 
+// Disabled on Mac OS X due to https://github.com/felixc/gexiv2-sys/issues/28
+#[cfg(not(target_os = "macos"))]
 #[test]
 fn metadata_get_and_set_exif_thumbnail_from_buffer() {
     unsafe {
@@ -243,6 +245,8 @@ fn metadata_set_exif_thumbnail_from_file() {
     }
 }
 
+// Disabled on Mac OS X due to https://github.com/felixc/gexiv2-sys/issues/28
+#[cfg(not(target_os = "macos"))]
 #[test]
 fn metadata_erase_exif_thumbnail() {
     unsafe {
