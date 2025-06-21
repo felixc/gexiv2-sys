@@ -26,7 +26,8 @@
 
 extern crate libc;
 
-use self::libc::{c_char, c_double, c_int, c_long, c_uchar, c_uint};
+use std::io::{Cursor, Read, Seek, SeekFrom, Write};
+use self::libc::{c_char, c_double, c_int, c_long, c_uchar, c_uint, c_longlong, c_void};
 
 /// An opaque structure that serves as a container for a media file's metadata.
 ///
@@ -80,6 +81,121 @@ impl Default for Orientation {
     fn default() -> Orientation { Orientation::Unspecified }
 }
 
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+pub enum WrapperSeekOrigin {
+    Begin = 0,
+    Current = 1,
+    End = 2,
+}
+
+type StreamCanSeek = extern "C" fn(handle: *mut c_void) -> bool;
+type StreamCanRead = extern "C" fn(handle: *mut c_void) -> bool;
+type StreamCanWrite = extern "C" fn(handle: *mut c_void) -> bool;
+type StreamLength = extern "C" fn(handle: *mut c_void) -> c_longlong;
+type StreamPosition = extern "C" fn(handle: *mut c_void) -> c_longlong;
+type StreamRead = extern "C" fn(handle: *mut c_void, buffer: *mut c_void, offset: c_int, count: c_int) -> c_int;
+type StreamWrite = extern "C" fn(handle: *mut c_void, buffer: *const c_void, offset: c_int, count: c_int);
+type StreamSeek = extern "C" fn(handle: *mut c_void, offset: c_longlong, origin: WrapperSeekOrigin);
+type StreamFlush = extern "C" fn(handle: *mut c_void);
+
+pub extern "C" fn stream_can_seek(_handle: *mut c_void) -> bool {
+    true
+}
+
+pub extern "C" fn stream_can_read(_handle: *mut c_void) -> bool {
+    true
+}
+
+pub extern "C" fn stream_can_write(_handle: *mut c_void) -> bool {
+    true
+}
+
+pub extern "C" fn stream_length(handle: *mut c_void) -> c_longlong {
+    let vec: &Vec<u8> = unsafe { &*(handle as *mut Vec<u8>) };
+    vec.len() as c_longlong
+}
+
+pub extern "C" fn stream_position(handle: *mut c_void) -> c_longlong {
+    let cursor: &Cursor<Vec<u8>> = unsafe { &*(handle as *mut Cursor<Vec<u8>>) };
+    cursor.position() as c_longlong
+}
+
+pub extern "C" fn stream_read(handle: *mut c_void, buffer: *mut c_void, _offset: c_int, count: c_int) -> c_int {
+    let cursor: &mut Cursor<Vec<u8>> = unsafe { &mut *(handle as *mut Cursor<Vec<u8>>) };
+    let buffer_slice = unsafe { std::slice::from_raw_parts_mut(buffer as *mut u8, count as usize) };
+
+    match cursor.read(buffer_slice) {
+        Ok(bytes_read) => bytes_read as c_int,
+        Err(e) => {
+            panic!("Error reading: {}", e);
+        },
+    }
+}
+
+pub extern "C" fn stream_seek(handle: *mut c_void, offset: c_longlong, origin: WrapperSeekOrigin) {
+    let cursor: &mut Cursor<Vec<u8>> = unsafe { &mut *(handle as *mut Cursor<Vec<u8>>) };
+    let pos = match origin {
+        WrapperSeekOrigin::Begin => SeekFrom::Start(offset as u64),
+        WrapperSeekOrigin::Current => SeekFrom::Current(offset),
+        WrapperSeekOrigin::End => SeekFrom::End(offset),
+    };
+    match cursor.seek(pos) {
+        Ok(_) => (),
+        Err(e) => panic!("Error seeking: {}", e),
+    }
+}
+
+pub extern "C" fn stream_flush(handle: *mut c_void) {
+    let cursor: &mut Cursor<Vec<u8>> = unsafe { &mut *(handle as *mut Cursor<Vec<u8>>) };
+    match cursor.flush() {
+        Ok(_) => (),
+        Err(e) => panic!("Error flushing: {}", e),
+    }
+}
+
+pub extern "C" fn stream_stream_write(handle: *mut c_void, buffer: *const c_void, _offset: c_int, count: c_int) {
+    let cursor: &mut Cursor<Vec<u8>> = unsafe { &mut *(handle as *mut Cursor<Vec<u8>>) };
+    let buffer_slice = unsafe { std::slice::from_raw_parts(buffer as *const u8, count as usize) };
+
+    match cursor.write_all(buffer_slice) {
+        Ok(_) => (),
+        Err(e) => panic!("Error writing: {}", e),
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+pub struct ManagedStreamCallbacks {
+    pub handle: *mut c_void,
+    pub can_seek: StreamCanSeek,
+    pub can_read: StreamCanRead,
+    pub can_write: StreamCanWrite,
+    pub length: StreamLength,
+    pub position: StreamPosition,
+    pub read: StreamRead,
+    pub write: StreamWrite,
+    pub seek: StreamSeek,
+    pub flush: StreamFlush,
+}
+
+impl ManagedStreamCallbacks {
+    pub fn new(handle: *mut c_void) -> ManagedStreamCallbacks {
+        ManagedStreamCallbacks {
+            handle,
+            can_seek: stream_can_seek,
+            can_read: stream_can_read,
+            can_write: stream_can_write,
+            length: stream_length,
+            position: stream_position,
+            read: stream_read,
+            write: stream_stream_write,
+            seek: stream_seek,
+            flush: stream_flush,
+        }
+    }
+}
+
 /// Log levels.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
@@ -107,8 +223,10 @@ extern "C" {
     pub fn gexiv2_metadata_free(this: *mut GExiv2Metadata);
     pub fn gexiv2_metadata_open_path(this: *mut GExiv2Metadata, path: *const c_char, error: *mut *mut GError) -> c_int;
     pub fn gexiv2_metadata_open_buf(Gthis: *mut GExiv2Metadata, data: *const u8, data_len: c_long, error: *mut *mut GError) -> c_int;
+    pub fn gexiv2_metadata_open_stream(this: *mut GExiv2Metadata, callbacks: *mut ManagedStreamCallbacks, error: *mut *mut GError) -> c_int;
     pub fn gexiv2_metadata_from_app1_segment(Gthis: *mut GExiv2Metadata, data: *const u8, data_len: c_long, error: *mut *mut GError) -> c_int;
     pub fn gexiv2_metadata_save_file(this: *mut GExiv2Metadata, path: *const c_char, error: *mut *mut GError) -> c_int;
+    pub fn gexiv2_metadata_save_stream(this: *mut GExiv2Metadata, callbacks: *mut ManagedStreamCallbacks, error: *mut *mut GError) -> c_int;
 
     // Image information.
     pub fn gexiv2_metadata_get_supports_exif(this: *mut GExiv2Metadata) -> c_int;
