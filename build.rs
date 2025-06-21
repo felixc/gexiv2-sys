@@ -22,7 +22,7 @@ fn main() {
         Ok(_) => (),
         Err(e) => {
             println!(
-                "\nThe gexiv2 library was not found by pkg-config on your system.\n\n\
+                "\nThe gexiv2 library was not found by pkg-config/pkgconf on your system.\n\n\
                  Consult the README.md file for suggestions on how to acquire it."
             );
             panic!("{}", e);

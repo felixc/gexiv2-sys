@@ -48,7 +48,7 @@ with the Homebrew package manager, using the [gexiv2][gexiv2-brew] formula:
 
 ```shell
 brew update
-brew install gexiv2 pkg-config
+brew install gexiv2 pkgconf
 ```
 
 For the build to succeed, you will have to tell `pkg-config` where Homebrew
