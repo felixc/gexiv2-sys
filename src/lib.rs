@@ -96,9 +96,9 @@ impl Default for GExiv2LogLevel {
 }
 
 /// Handler function that receives gexiv2 log messages and processes them as desired.
-pub type GExiv2LogHandler = extern fn(level: GExiv2LogLevel, msg: *const c_char);
+pub type GExiv2LogHandler = extern "C" fn(level: GExiv2LogLevel, msg: *const c_char);
 
-extern {
+extern "C" {
     pub fn gexiv2_get_version() -> c_int;
     pub fn gexiv2_initialize() -> c_int;
 
@@ -217,7 +217,7 @@ extern {
 extern crate glib_sys as glib;
 
 #[cfg(feature = "raw-tag-access")]
-extern {
+extern "C" {
     pub fn gexiv2_metadata_get_tag_raw(this: *mut GExiv2Metadata, tag: *const libc::c_char) -> *mut glib::GBytes;
 }
 
@@ -240,7 +240,7 @@ bitflags! {
 }
 
 #[cfg(feature = "xmp-packet-access")]
-extern {
+extern "C" {
     pub fn gexiv2_metadata_generate_xmp_packet(this: *mut GExiv2Metadata, xmp_format_flags: libc::c_ulong, padding: u32) -> *const c_char;
     pub fn gexiv2_metadata_get_xmp_packet(this: *mut GExiv2Metadata) -> *const c_char;
 }

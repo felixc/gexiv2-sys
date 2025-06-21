@@ -19,7 +19,7 @@ extern crate pkg_config;
 
 fn main() {
     match pkg_config::find_library("gexiv2") {
-        Ok(_) => return,
+        Ok(_) => (),
         Err(e) => {
             println!(
                 "\nThe gexiv2 library was not found by pkg-config on your system.\n\n\

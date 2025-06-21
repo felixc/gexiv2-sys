@@ -10,7 +10,7 @@ use std::ffi;
 use std::ptr;
 
 
-static FILE_PATH: &'static str = "/YOUR/FILE/PATH/GOES/HERE.jpg";
+static FILE_PATH: &str = "/YOUR/FILE/PATH/GOES/HERE.jpg";
 
 
 fn get_file_metadata(path: &str) -> *mut gexiv2::GExiv2Metadata {
