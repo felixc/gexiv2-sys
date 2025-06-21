@@ -63,8 +63,9 @@ pub struct GError {
 
 /// All the possible orientations for an image.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
 pub enum Orientation {
+    #[default]
     Unspecified,
     Normal,
     HorizontalFlip,
@@ -76,23 +77,16 @@ pub enum Orientation {
     Rotate270,
 }
 
-impl Default for Orientation {
-    fn default() -> Orientation { Orientation::Unspecified }
-}
-
 /// Log levels.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
 pub enum GExiv2LogLevel {
     DEBUG,
     INFO,
     WARN,
+    #[default]
     ERROR,
     MUTE,
-}
-
-impl Default for GExiv2LogLevel {
-    fn default() -> GExiv2LogLevel { GExiv2LogLevel::ERROR }
 }
 
 /// Handler function that receives gexiv2 log messages and processes them as desired.
