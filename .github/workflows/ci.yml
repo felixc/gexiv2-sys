@@ -10,15 +10,16 @@ concurrency:
   cancel-in-progress: true
 jobs:
   linux:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
+        os_image: ["ubuntu-latest", "ubuntu-24.04-arm"]
         container_image: ["rust:1.63-slim", "rust:slim", "rustlang/rust:nightly-slim"]
+    runs-on: ${{ matrix.os_image }}
     container:
       image: ${{ matrix.container_image }}
     steps:
       - name: Check out source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install system dependencies
         run: |
           apt --quiet update
@@ -41,7 +42,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Check out source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install system dependencies
         run: brew install gexiv2
       - name: Install Rust and Cargo
