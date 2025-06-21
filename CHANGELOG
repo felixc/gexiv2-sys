@@ -1,4 +1,5 @@
 UNRELEASED
+  * Updated bitflags to 2.x series; see https://github.com/bitflags/bitflags/blob/main/CHANGELOG.md#200
   * Update minimum supported Rust version to 1.70 due to dependency reqs.
 
 2023-01-09 - v1.4.0
