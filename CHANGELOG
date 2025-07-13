@@ -1,4 +1,5 @@
 UNRELEASED
+  * Add support for g_error_free to prevent memory leaks of GErrors.
   * Update minimum supported Rust version (MSRV) to 1.70 due to dependency reqs.
 
 2023-01-09 - v1.4.0
