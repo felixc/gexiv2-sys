@@ -1,5 +1,6 @@
 UNRELEASED
   * Add support for g_error_free to prevent memory leaks of GErrors.
+  * Explicitly check for minimum v0.10 of gexiv2 system library.
 
 2023-01-09 - v1.4.0
   * Now supports `gexiv2_metadata_from_app1_segment`, thanks to Hubert Figuière.
