@@ -95,6 +95,7 @@ pub type GExiv2LogHandler = extern "C" fn(level: GExiv2LogLevel, msg: *const c_c
 extern "C" {
     pub fn gexiv2_get_version() -> c_int;
     pub fn gexiv2_initialize() -> c_int;
+    #[cfg(gexiv2_v0_16_or_newer)] pub fn gexiv2_shutdown();
 
     // GExiv2Metadata lifecycle management.
     pub fn gexiv2_metadata_new() -> *mut GExiv2Metadata;
