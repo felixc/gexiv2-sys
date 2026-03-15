@@ -22,7 +22,7 @@ fn main() {
         .unwrap_or_else(|e| {
             eprintln!(
                 "\nThe gexiv2 library was not found by pkg-config/pkgconf on your system.\n\n\
-                 Consult the README.md file for suggestions on how to acquire it."
+                 Consult README.md or SETUP.md for suggestions on how to acquire it."
             );
             panic!("{}", e);
         });

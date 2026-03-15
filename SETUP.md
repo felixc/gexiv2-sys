@@ -51,8 +51,8 @@ brew update
 brew install gexiv2 pkgconf
 ```
 
-For the build to succeed, you will have to tell `pkg-config` where Homebrew
-installed some relevant libraries, using:
+For the build to succeed, you may have to tell `pkgconf` where Homebrew
+installed relevant libraries, using `PKG_CONFIG_PATH`. For example,
 
 ```shell
 export PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig"
