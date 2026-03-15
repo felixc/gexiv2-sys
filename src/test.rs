@@ -1,4 +1,4 @@
-// Copyright © 2017-2022 Felix A. Crux <felixc@felixcrux.com> and contributors
+// Copyright © 2017-2026 Felix A. Crux <felixc@felixcrux.com> and contributors
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -201,21 +201,21 @@ fn metadata_get_tag_type() {
 
 // Exif thumbnail getter/setters.
 
-// Disabled on Mac OS X due to https://github.com/felixc/gexiv2-sys/issues/28
-#[cfg(not(target_os = "macos"))]
 #[test]
 fn metadata_get_and_set_exif_thumbnail_from_buffer() {
     unsafe {
         let meta = make_new_metadata();
         let mut thumb: *mut u8 = ptr::null_mut();
         let mut thumb_size: libc::c_int = 0;
-        assert_eq!(gexiv2_metadata_get_exif_thumbnail(meta, &mut thumb, &mut thumb_size), 0);
+        assert_eq!(gexiv2_metadata_get_exif_thumbnail(meta, &mut thumb, &mut thumb_size), 1);
+        assert!(thumb.is_null());
         gexiv2_metadata_set_exif_thumbnail_from_buffer(
             meta,
             MINI_JPEG.as_ptr(),
             MINI_JPEG.len() as libc::c_int,
         );
         assert_eq!(gexiv2_metadata_get_exif_thumbnail(meta, &mut thumb, &mut thumb_size), 1);
+        assert!(!thumb.is_null());
         assert_eq!(MINI_JPEG, slice::from_raw_parts(thumb, thumb_size as usize));
     }
 }
@@ -241,12 +241,11 @@ fn metadata_set_exif_thumbnail_from_file() {
         let mut thumb: *mut u8 = ptr::null_mut();
         let mut thumb_size: libc::c_int = 0;
         assert_eq!(gexiv2_metadata_get_exif_thumbnail(meta, &mut thumb, &mut thumb_size), 1);
+        assert!(!thumb.is_null());
         assert_eq!(MINI_JPEG, slice::from_raw_parts(thumb, thumb_size as usize));
     }
 }
 
-// Disabled on Mac OS X due to https://github.com/felixc/gexiv2-sys/issues/28
-#[cfg(not(target_os = "macos"))]
 #[test]
 fn metadata_erase_exif_thumbnail() {
     unsafe {
@@ -259,8 +258,10 @@ fn metadata_erase_exif_thumbnail() {
             MINI_JPEG.len() as libc::c_int,
         );
         assert_eq!(gexiv2_metadata_get_exif_thumbnail(meta, &mut thumb, &mut thumb_size), 1);
+        assert!(!thumb.is_null());
         gexiv2_metadata_erase_exif_thumbnail(meta);
-        assert_eq!(gexiv2_metadata_get_exif_thumbnail(meta, &mut thumb, &mut thumb_size), 0);
+        assert_eq!(gexiv2_metadata_get_exif_thumbnail(meta, &mut thumb, &mut thumb_size), 1);
+        assert!(thumb.is_null());
     }
 }
 
