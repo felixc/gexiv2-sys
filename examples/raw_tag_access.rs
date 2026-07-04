@@ -12,18 +12,22 @@ mod example {
     extern crate libc;
 
     use std::ffi;
+    use std::ptr;
     use std::slice;
     use std::str;
+
+    use gexiv2_sys::GError;
 
     pub fn example() {
         unsafe {
             let metadata = crate::open_buf::make_new_metadata();
+            let mut err: *mut GError = ptr::null_mut();
 
             let tag = ffi::CString::new("Exif.Image.ImageDescription").unwrap();
             let tag_value = ffi::CString::new("Raw Tag Access Example").unwrap();
-            gexiv2::gexiv2_metadata_set_tag_string(metadata, tag.as_ptr(), tag_value.as_ptr());
+            gexiv2::gexiv2_metadata_set_tag_string(metadata, tag.as_ptr(), tag_value.as_ptr(), &mut err);
 
-            let raw_tag_struct = gexiv2::gexiv2_metadata_get_tag_raw(metadata, tag.as_ptr());
+            let raw_tag_struct = gexiv2::gexiv2_metadata_get_tag_raw(metadata, tag.as_ptr(), &mut err);
 
             let mut raw_tag_buffer_size: usize = 0;
             let raw_tag_buffer =

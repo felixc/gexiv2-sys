@@ -15,13 +15,16 @@
 
 //! Confirm gexiv2 library exists on the system.
 
+extern crate cc;
+
 fn main() {
+    let mut cfg = cc::Build::new();
     let system_library = pkg_config::Config::new()
-        .atleast_version("0.10")
-        .probe("gexiv2")
+        .atleast_version("0.16")
+        .probe("gexiv2-0.16")
         .unwrap_or_else(|e| {
             eprintln!(
-                "\nThe gexiv2 library was not found by pkg-config/pkgconf on your system.\n\n\
+                "\nThe gexiv2 library (at least version 0.16) was not found by pkg-config/pkgconf on your system.\n\n\
                  Consult the README.md file for suggestions on how to acquire it."
             );
             panic!("{}", e);
@@ -50,5 +53,12 @@ fn main() {
         if (major, minor) >= (milestone_major, milestone_minor) {
             println!("cargo:rustc-cfg={}", flag);
         }
+    };
+    cfg.file("src/glue.cpp");
+
+    for path in system_library.include_paths {
+        cfg.include(path);
     }
+
+    cfg.compile("gexiv2_sys_glue");
 }

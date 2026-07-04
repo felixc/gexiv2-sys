@@ -10,23 +10,27 @@ mod example {
     extern crate gexiv2_sys as gexiv2;
     extern crate libc;
 
-    use std::ffi;
+    use std::{ffi, ptr};
+
+    use gexiv2_sys::GError;
 
     pub fn example() {
         unsafe {
             let metadata = crate::open_buf::make_new_metadata();
+            let mut err: *mut GError = ptr::null_mut();
 
             let tag = ffi::CString::new("Xmp.dc.title").unwrap();
             let tag_value = ffi::CString::new("Example").unwrap();
-            gexiv2::gexiv2_metadata_set_tag_string(metadata, tag.as_ptr(), tag_value.as_ptr());
+            gexiv2::gexiv2_metadata_set_tag_string(metadata, tag.as_ptr(), tag_value.as_ptr(), &mut err);
 
             gexiv2::gexiv2_metadata_generate_xmp_packet(
                 metadata,
                 (gexiv2::GExiv2XmpFormatFlags::OMIT_PACKET_WRAPPER
-                    | gexiv2::GExiv2XmpFormatFlags::OMIT_ALL_FORMATTING).bits(),
+                    | gexiv2::GExiv2XmpFormatFlags::OMIT_ALL_FORMATTING)
+                    .bits(),
                 1,
             );
-            let packet = gexiv2::gexiv2_metadata_get_xmp_packet(metadata);
+            let packet = gexiv2::gexiv2_metadata_get_xmp_packet(metadata, &mut err);
             println!("{}", ffi::CStr::from_ptr(packet).to_str().unwrap());
 
             gexiv2::gexiv2_metadata_free(metadata);
