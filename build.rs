@@ -21,7 +21,7 @@ fn main() {
     let mut cfg = cc::Build::new();
     let system_library = pkg_config::Config::new()
         .atleast_version("0.16")
-        .probe("gexiv2")
+        .probe("gexiv2-0.16")
         .unwrap_or_else(|e| {
             eprintln!(
                 "\nThe gexiv2 library (at least version 0.16) was not found by pkg-config/pkgconf on your system.\n\n\
